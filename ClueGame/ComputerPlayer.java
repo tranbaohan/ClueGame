@@ -10,7 +10,8 @@ public class ComputerPlayer extends Player {
 	private ArrayList<Card> seenCards;
 	
 	public ComputerPlayer(){
-		seenCards = new ArrayList<Card>(); 
+		seenCards = super.getMyCards();
+		lastRoomVisited = ' ';
 	}
 	
 	public BoardCell pickLocation(Set<BoardCell> targets){
@@ -23,7 +24,7 @@ public class ComputerPlayer extends Player {
 	}
 	
 	public void updateSeen(Card aCard){
-		
+		seenCards.add(aCard);
 	}
 
 	public char getLastRoomVisited() {
