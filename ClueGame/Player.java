@@ -24,6 +24,18 @@ public class Player {
 		location = loc;
 		name = str;
 	}
+    
+    public Color strToColor(String strColor) {
+		Color color; 
+		try {     
+			// We can use reflection to convert the string to a color
+			Field field = Class.forName("java.awt.Color").getField(strColor.trim());     
+			color = (Color)field.get(null); } 
+		catch (Exception e) {  
+			color = null; // Not defined } 
+		}
+		return color;
+	}
 	
 	public Card disproveSuggestion(String person, String weapon, String room){
 		for (Card i: myCards)
