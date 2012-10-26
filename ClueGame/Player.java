@@ -18,8 +18,8 @@ public class Player {
 		name = "";
 	}
 	
-	public Player(String str, Color c, int loc){
-		color = c;
+	public Player(String str, String c, int loc){
+		color = strToColor(c);
 		myCards = new ArrayList<Card>();
 		location = loc;
 		name = str;
@@ -54,6 +54,10 @@ public class Player {
 
 	public void setLocation(int location) {
 		this.location = location;
+	}
+	
+	public Color strToColor(String str){
+		return Color.BLUE;
 	}
 	
 }
