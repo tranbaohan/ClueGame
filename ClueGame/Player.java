@@ -11,19 +11,6 @@ public class Player {
 	private Color color;
 	private int location;
 	
-	public Color convertColor(String strColor) {
-		Color color;
-		try {
-			// We can use reflection to convert the string to a color
-			Field field = Class.forName("java.awt.Color").getField(strColor.trim());
-			color = (Color)field.get(null);
-		}
-		catch (Exception e) {
-			color = null; // Not defined;
-		}
-		return color;
-	}
-	
 	public Player(){
 		color = Color.black;
 		myCards = new ArrayList<Card>();
@@ -31,8 +18,18 @@ public class Player {
 		name = "";
 	}
 	
+	public Player(String str, Color c, int loc){
+		color = c;
+		myCards = new ArrayList<Card>();
+		location = loc;
+		name = str;
+	}
+	
 	public Card disproveSuggestion(String person, String weapon, String room){
-		return new Card("", CardType.WEAPON);
+		for (Card i: myCards)
+			if (i.getName().equals(person) || i.getName().equals(weapon) | i.getName().equals(room))
+				return i;
+		return null;
 	}
 
 	public Color getColor() {
@@ -52,7 +49,7 @@ public class Player {
 	}
 	
 	public void addCard(Card aCard){
-		
+		myCards.add(aCard);
 	}
 
 	public void setLocation(int location) {

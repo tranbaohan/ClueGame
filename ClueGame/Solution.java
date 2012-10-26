@@ -6,10 +6,10 @@ public class Solution {
 	private String weapon;
 	
 	public Solution(){
-		
+		super();
 	}
 	
-	public Solution(String person, String room, String weapon){
+	public Solution(String person, String weapon, String room){
 		this.person = person;
 		this.room = room;
 		this.weapon = weapon;
@@ -18,9 +18,11 @@ public class Solution {
 	public String getPerson() {
 		return person;
 	}
+	
 	public String getRoom() {
 		return room;
 	}
+	
 	public String getWeapon() {
 		return weapon;
 	}
