@@ -258,7 +258,7 @@ public class Board {
 			
 		}
 		
-		public boolean checkAccusation(String person, String room, String weapon){
+		public boolean checkAccusation(String person, String weapon, String room){
 			return true;
 		}
 		
