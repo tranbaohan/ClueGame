@@ -1,6 +1,7 @@
 package ClueGame;
 
 import java.awt.Color;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import ClueGame.Card.CardType;
@@ -23,18 +24,6 @@ public class Player {
 		myCards = new ArrayList<Card>();
 		location = loc;
 		name = str;
-	}
-    
-    public Color strToColor(String strColor) {
-		Color color; 
-		try {     
-			// We can use reflection to convert the string to a color
-			Field field = Class.forName("java.awt.Color").getField(strColor.trim());     
-			color = (Color)field.get(null); } 
-		catch (Exception e) {  
-			color = null; // Not defined } 
-		}
-		return color;
 	}
 	
 	public Card disproveSuggestion(String person, String weapon, String room){
@@ -68,8 +57,16 @@ public class Player {
 		this.location = location;
 	}
 	
-	public Color strToColor(String str){
-		return Color.BLUE;
+	public Color strToColor(String strColor){
+		Color color; 
+		try {     
+			// We can use reflection to convert the string to a color
+			Field field = Class.forName("java.awt.Color").getField(strColor.trim());     
+			color = (Color)field.get(null); } 
+		catch (Exception e) {  
+			color = null; // Not defined } 
+		}
+		return color;
 	}
 	
 }
