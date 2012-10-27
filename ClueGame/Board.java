@@ -49,6 +49,7 @@ public class Board {
 		public void LoadConfigFiles() {
 			loadLegend();
 			loadLayout();
+			setXY();
 		}
 		
 		public void loadLegend() {
@@ -114,6 +115,13 @@ public class Board {
 				System.out.println("File not found: " + layoutFile);
 			} catch(BadConfigFormatException e) {
 				System.out.println(e.getMessage());
+			}
+		}
+		
+		public void setXY(){
+			for (int i=0; i<cells.size(); i++){
+				cells.get(i).setCol(i % numColumns);
+				cells.get(i).setRow(i / numRows);
 			}
 		}
 		
@@ -305,7 +313,28 @@ public class Board {
 		}
 		
 		public Card handleSuggestion(Suggestion suggest, Player currentPlayer){
-			return new Card("", Card.CardType.PERSON);
+			ArrayList<Card> possible = new ArrayList<Card>();
+			if (human != currentPlayer){
+				Card card = human.disproveSuggestion(suggest.getPerson().getName(), 
+						suggest.getWeapon().getName(), suggest.getRoom().getName());
+				if (card != null)
+					possible.add(card);
+			}
+			for (ComputerPlayer i: computer){
+				if (i != currentPlayer){
+					Card card = i.disproveSuggestion(suggest.getPerson().getName(), 
+							suggest.getWeapon().getName(), suggest.getRoom().getName());
+					if (card != null)
+						possible.add(card);
+				}
+			}
+			if (possible.size() == 0)
+				return null;
+			else {
+				Random generator = new Random();
+				int r = generator.nextInt(possible.size());
+				return possible.get(r);
+			}
 		}
 		
 		public void loadCards(){

@@ -17,11 +17,13 @@ public class ComputerPlayer extends Player {
 	
 	public ComputerPlayer(String str, String c, int loc) {
 		super(str, c, loc);
+		seenCards = super.getMyCards();
+		lastRoomVisited = ' ';
 	}
 
 	public BoardCell pickLocation(Set<BoardCell> targets){
 		for (BoardCell i: targets)
-			if (i.isRoom() && (((RoomCell) i).getInitial() == lastRoomVisited))
+			if (i.isRoom() && !(((RoomCell) i).getInitial() == lastRoomVisited))
 				return i;
 		Object[] cell = targets.toArray();
 		Random generator = new Random();

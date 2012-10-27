@@ -67,27 +67,27 @@ public class GameActionsTests {
 		int loc_1_5Tot = 0;
 		int loc_5_5Tot = 0;
 		int loc_4_4Tot = 0;
-		int loc_4_2Tot = 0;
+		int loc_2_4Tot = 0;
 		// Run the test 400 times
 		for (int i=0; i<400; i++) {
 			BoardCell selected = player.pickLocation(board.getTargets());
-			if (selected == board.getCellAt(board.calcIndex(1, 5)))
+			if ((selected.getCol() == 5) && (selected.getRow() == 1))
 				loc_1_5Tot++;
-			else if (selected == board.getCellAt(board.calcIndex(5, 5)))
+			else if ((selected.getCol() == 5) && (selected.getRow() == 5))
 				loc_5_5Tot++;
-			else if (selected == board.getCellAt(board.calcIndex(4, 4)))
+			else if ((selected.getCol() == 4) && (selected.getRow() == 4))
 				loc_4_4Tot++;
-			else if (selected == board.getCellAt(board.calcIndex(4, 2)))
-				loc_4_2Tot++;
+			else if ((selected.getCol() == 4) && (selected.getRow() == 2))
+				loc_2_4Tot++;
 			else
 				fail("Invalid target selected");
 		}
-		Assert.assertEquals(400, loc_1_5Tot + loc_5_5Tot + loc_4_4Tot + loc_4_2Tot);
+		Assert.assertEquals(400, loc_1_5Tot + loc_5_5Tot + loc_4_4Tot + loc_2_4Tot);
 		// Ensure each target was selected more than once
 		Assert.assertTrue(loc_1_5Tot > 10);
 		Assert.assertTrue(loc_5_5Tot > 10);
 		Assert.assertTrue(loc_4_4Tot > 10);	
-		Assert.assertTrue(loc_4_2Tot > 10);	
+		Assert.assertTrue(loc_2_4Tot > 10);	
 		
 		
 	//	*********************** Room preference selection test
@@ -98,7 +98,7 @@ public class GameActionsTests {
 		int room = 0;
 		for (int i=0; i<100; i++) {
 			BoardCell selected = player.pickLocation(board.getTargets());
-			if (selected == board.getCellAt(board.calcIndex(15, 15)))
+			if ((selected.getCol() == 15) && (selected.getRow() == 15))
 				room++;
 			else
 				fail("Invalid target selected");
@@ -115,11 +115,11 @@ public class GameActionsTests {
 		//	Run the test 200 times
 		for (int i=0; i<200; i++) {
 			BoardCell selected = player.pickLocation(board.getTargets());
-			if (selected == board.getCellAt(board.calcIndex(0, 3)))
+			if ((selected.getCol() == 3) && (selected.getRow() == 0))
 				room++;
-			else if (selected == board.getCellAt(board.calcIndex(0, 5)))
+			else if ((selected.getCol() == 5) && (selected.getRow() == 0))
 				loc_0_5++;
-			else if (selected == board.getCellAt(board.calcIndex(1, 4)))
+			else if ((selected.getCol() == 4) && (selected.getRow() == 1))
 				loc_1_4++;
 			else
 				fail("Invalid target selected");
@@ -148,23 +148,23 @@ public class GameActionsTests {
 		
 		//	Test for one player, multiple possible matches
 		int mustard = 0;
-		int knife = 0;
+		int rope = 0;
 		int lounge = 0;
 		for (int i=0; i<200; i++){
-			Card selected = player.disproveSuggestion("Colonel Mustard", "Knife", "Lounge");
+			Card selected = player.disproveSuggestion("Colonel Mustard", "Rope", "Lounge");
 			if (selected == mustardCard)
 				mustard++;
 			else if (selected == ropeCard)
-				knife++;
+				rope++;
 			else if (selected == loungeCard)
 				lounge++;
 			else 
 				fail("Returned card is not part of suggestion.");
 		}
-		Assert.assertEquals(200, mustard + knife + lounge);
+		Assert.assertEquals(200, mustard + rope + lounge);
 		Assert.assertTrue(mustard > 10);
-		Assert.assertTrue(knife > 10);
 		Assert.assertTrue(lounge > 10);
+		Assert.assertTrue(rope > 10);
 		
 		//	Create 3 players, 1 human 2 comps
 		ArrayList<ComputerPlayer> comp = board.getComputer();
@@ -198,12 +198,13 @@ public class GameActionsTests {
 		int comp1 = 0;
 		int comp2 = 0;
 		for (int i=0; i<200; i++){
-			if (board.handleSuggestion(suggest, human) == studyCard)
+			Card disprove = board.handleSuggestion(suggest, human);
+			if (disprove == studyCard)
 				comp1++;
-			else if (board.handleSuggestion(suggest, human) == ropeCard)
+			else if (disprove == ropeCard)
 				comp2++;
 			else 
-				fail("Invalid suggestion's handler.");
+				fail("Invalid suggestion's handler." + disprove.toString());
 		}
 		Assert.assertEquals(200, comp1 + comp2);
 		Assert.assertTrue(comp1 > 10);

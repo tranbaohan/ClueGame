@@ -3,6 +3,7 @@ package ClueGame;
 import java.awt.Color;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Random;
 
 import ClueGame.Card.CardType;
 
@@ -27,10 +28,17 @@ public class Player {
 	}
 	
 	public Card disproveSuggestion(String person, String weapon, String room){
+		ArrayList<Card> possible = new ArrayList<Card>();
 		for (Card i: myCards)
 			if (i.getName().equals(person) || i.getName().equals(weapon) | i.getName().equals(room))
-				return i;
-		return null;
+				possible.add(i);
+		if (possible.size() == 0)
+			return null;
+		else {
+			Random generator = new Random();
+			int r = generator.nextInt(possible.size());
+			return possible.get(r);
+		}
 	}
 
 	public Color getColor() {
