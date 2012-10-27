@@ -26,6 +26,7 @@ public class Board {
 		private HumanPlayer human;
 		private ArrayList<Card> cards;
 		private Solution solution;
+		public static ArrayList<Card> deck;
 		private static final int MAX_CARDS = 21;
 		private static final int MAX_BOTS = 5;
 		
@@ -42,6 +43,7 @@ public class Board {
 			computer = new ArrayList<ComputerPlayer>();
 			cards = new ArrayList<Card>();
 			solution = new Solution();
+			deck = new ArrayList<Card>();
 		}
 		
 		public void LoadConfigFiles() {
@@ -50,7 +52,7 @@ public class Board {
 		}
 		
 		public void loadLegend() {
-			String legendFile = "NewLegend.txt";
+			String legendFile = "Clue Legend.txt";
 			try {
 				Scanner in = new Scanner(new FileReader(legendFile));
 				while(in.hasNext()) {
@@ -69,7 +71,7 @@ public class Board {
 		}
 		
 		public void loadLayout() {
-			String layoutFile = "NewBoard.csv";
+			String layoutFile = "Clue Layout.csv";
 			try {
 				Scanner in  = new Scanner(new FileReader(layoutFile));
 				int cols = 0;
@@ -219,11 +221,6 @@ public class Board {
 	    	}
 	    }
 	    
-	    public void clearTargets() {
-	    	targets.clear();
-	    	seen.clear();
-	    }
-	    
 	    public Set<BoardCell> getTargets() {
 	        return targets;       
 	    }
@@ -248,7 +245,6 @@ public class Board {
 			return numColumns;
 		}
 		
-		/////////////////////////////////////////////////////////////////////
 		public void selectAnswer(){
 			Random generator = new Random(423524626);
 			Card person;
@@ -299,6 +295,12 @@ public class Board {
 		}
 		
 		public boolean checkAccusation(String person, String weapon, String room){
+			if (!solution.getPerson().equals(person))
+				return false;
+			if (!solution.getWeapon().equals(weapon))
+				return false;
+			if (!solution.getRoom().equals(room))
+				return false;
 			return true;
 		}
 		
@@ -333,6 +335,7 @@ public class Board {
 							System.exit(0);
 					}
 					cards.add(new Card(cardInfo[0], type));
+					deck.add(new Card(cardInfo[0], type));
 				}				
 			} catch (FileNotFoundException e){
 				System.out.println("Can't find " + file);

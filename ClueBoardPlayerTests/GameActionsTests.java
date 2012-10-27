@@ -23,7 +23,7 @@ import ClueGame.Card.CardType;
 public class GameActionsTests {
 	private Board board;
 	private static Card mustardCard;
-	private static Card knifeCard;
+	private static Card ropeCard;
 	private static Card greenCard;
 	private static Card daggerCard;
 	private static Card studyCard;
@@ -32,7 +32,7 @@ public class GameActionsTests {
 	@BeforeClass
 	public static void setCards(){
 		mustardCard = new Card("Colonel Mustard", Card.CardType.PERSON);
-		knifeCard = new Card("Knife", Card.CardType.WEAPON);
+		ropeCard = new Card("Rope", Card.CardType.WEAPON);
 		greenCard = new Card("Mr. Green", Card.CardType.PERSON);
 		daggerCard = new Card("Dagger", Card.CardType.WEAPON);
 		studyCard = new Card("Study", Card.CardType.ROOM);
@@ -42,6 +42,8 @@ public class GameActionsTests {
 	@Before
 	public void setUp(){
 		board = new Board();
+		board.LoadConfigFiles();
+		board.calcAdjacencies();
 	}
 	
 	@Test
@@ -123,10 +125,10 @@ public class GameActionsTests {
 				fail("Invalid target selected");
 		}
 		//	Room is last visited
-		Assert.assertEquals(room, 0);
-		Assert.assertEquals(loc_0_5 + loc_1_4, 200);
+		Assert.assertEquals(loc_0_5 + loc_1_4 + room, 200);
 		Assert.assertTrue(loc_1_4 > 10);	
 		Assert.assertTrue(loc_0_5 > 10);	
+		Assert.assertTrue(room > 10);
 	}
 	
 	@Test
@@ -134,7 +136,7 @@ public class GameActionsTests {
 		// 	Test for one player, one correct match
 		Player player = new Player();
 		player.addCard(mustardCard);
-		player.addCard(knifeCard);
+		player.addCard(ropeCard);
 		player.addCard(greenCard);
 		player.addCard(daggerCard);
 		player.addCard(studyCard);
@@ -152,7 +154,7 @@ public class GameActionsTests {
 			Card selected = player.disproveSuggestion("Colonel Mustard", "Knife", "Lounge");
 			if (selected == mustardCard)
 				mustard++;
-			else if (selected == knifeCard)
+			else if (selected == ropeCard)
 				knife++;
 			else if (selected == loungeCard)
 				lounge++;
@@ -173,7 +175,7 @@ public class GameActionsTests {
 		human.addCard(greenCard);
 		human.addCard(loungeCard);
 		comp.get(0).addCard(daggerCard);
-		comp.get(0).addCard(knifeCard);
+		comp.get(0).addCard(ropeCard);
 		comp.get(1).addCard(studyCard);
 		comp.get(1).addCard(mustardCard);
 		
@@ -192,13 +194,13 @@ public class GameActionsTests {
 		Assert.assertEquals(board.handleSuggestion(suggest, comp.get(1)), greenCard);
 		
 		//	Random player's disprove if 2 can disprove
-		suggest = new Suggestion(knifeCard, new Card("Miss Scarlet", Card.CardType.PERSON), studyCard);
+		suggest = new Suggestion(ropeCard, new Card("Miss Scarlet", Card.CardType.PERSON), studyCard);
 		int comp1 = 0;
 		int comp2 = 0;
 		for (int i=0; i<200; i++){
 			if (board.handleSuggestion(suggest, human) == studyCard)
 				comp1++;
-			else if (board.handleSuggestion(suggest, human) == knifeCard)
+			else if (board.handleSuggestion(suggest, human) == ropeCard)
 				comp2++;
 			else 
 				fail("Invalid suggestion's handler.");
@@ -212,50 +214,52 @@ public class GameActionsTests {
 	@Test
 	public void makingSuggestionTest() {
 		ComputerPlayer comp = new ComputerPlayer();
-		//	Add all the cards to seen (except dagger, knife and mr. green)
+		//	Add all the cards to seen (except dagger, rope and mr. green)
 		board.loadCards();
 		for (Card i: board.getCards())
-			if (!i.equals(knifeCard) && !i.equals(greenCard) && !i.equals(daggerCard))
 				comp.updateSeen(i);
+		comp.getSeenCards().remove(greenCard);
+		comp.getSeenCards().remove(daggerCard);
+		comp.getSeenCards().remove(ropeCard);
 		//	Set location to Hall
 		comp.setLocation(board.calcIndex(7,  11));
 		
 		//	Test random suggestion
-		int knifeGreen = 0;
+		int ropeGreen = 0;
 		int daggerGreen = 0;
 		for (int i=0; i<150; i++){
-			Suggestion suggest = comp.createSuggestion();
+			Suggestion suggest = comp.createSuggestion("Hall");
 			//	Correct room?
 			Assert.assertEquals(new Card("Hall", Card.CardType.ROOM), suggest.getRoom());
 			//	Random combo?
 			if (suggest.getPerson().equals(greenCard) && suggest.getWeapon().equals(daggerCard))
 				daggerGreen++;
-			else if (suggest.getPerson().equals(greenCard) && suggest.getWeapon().equals(knifeCard))
-				knifeGreen++;
+			else if (suggest.getPerson().equals(greenCard) && suggest.getWeapon().equals(ropeCard))
+				ropeGreen++;
 			else 
 				fail("Invalid suggestion.");
 		}
-		Assert.assertEquals(daggerGreen + knifeGreen, 150);
+		Assert.assertEquals(daggerGreen + ropeGreen, 150);
 		Assert.assertTrue(daggerGreen > 10);
-		Assert.assertTrue(knifeGreen > 10);
+		Assert.assertTrue(ropeGreen > 10);
 		
-		//	Add more card, only mr green and knife left
+		//	Add more card, only mr green and rope left
 		comp.updateSeen(daggerCard);
 		//	New location: Study
 		comp.setLocation(board.calcIndex(7, 3));
-		knifeGreen = 0;
+		ropeGreen = 0;
 		//	Test 1 correct suggestion
 		for (int i=0; i<100; i++){
-			Suggestion suggest = comp.createSuggestion();
+			Suggestion suggest = comp.createSuggestion("Study");
 			//	Correct room?
 			Assert.assertEquals(new Card("Study", Card.CardType.ROOM), suggest.getRoom());
 			//	1 possible suggestion 
-			if (suggest.getPerson().equals(greenCard) && suggest.getWeapon().equals(knifeCard))
-				knifeGreen++;
+			if (suggest.getPerson().equals(greenCard) && suggest.getWeapon().equals(ropeCard))
+				ropeGreen++;
 			else 
 				fail("Invalid suggestion.");
 		}
-		Assert.assertEquals(100, knifeGreen);
+		Assert.assertEquals(100, ropeGreen);
 		
 	}
 

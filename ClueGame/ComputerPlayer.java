@@ -1,6 +1,7 @@
 package ClueGame;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Set;
 
 import ClueGame.Card.CardType;
@@ -16,16 +17,31 @@ public class ComputerPlayer extends Player {
 	
 	public ComputerPlayer(String str, String c, int loc) {
 		super(str, c, loc);
-		// TODO Auto-generated constructor stub
 	}
 
 	public BoardCell pickLocation(Set<BoardCell> targets){
-		return new WalkwayCell();
+		for (BoardCell i: targets)
+			if (i.isRoom() && (((RoomCell) i).getInitial() == lastRoomVisited))
+				return i;
+		Object[] cell = targets.toArray();
+		Random generator = new Random();
+		int random = generator.nextInt(cell.length);
+		return (BoardCell) cell[random];
 	}
 	
-	public Suggestion createSuggestion(){
-		return new Suggestion(new Card("", CardType.WEAPON), new Card("", CardType.WEAPON), 
-				new Card("", CardType.WEAPON));
+	public Suggestion createSuggestion(String room){
+		ArrayList<Card> unseenWeapon = new ArrayList<Card>();
+		ArrayList<Card> unseenPerson = new ArrayList<Card>();
+		for (Card i: Board.deck){
+			if (!seenCards.contains(i) && (i.getType() == CardType.WEAPON))
+				unseenWeapon.add(i);
+			else if (!seenCards.contains(i) && (i.getType() == CardType.PERSON))
+				unseenPerson.add(i);
+		}
+		Random generator = new Random();
+		int r1 = generator.nextInt(unseenWeapon.size());
+		int r2 = generator.nextInt(unseenPerson.size());
+		return new Suggestion(unseenPerson.get(r2), unseenWeapon.get(r1), new Card(room, CardType.ROOM));
 	}
 	
 	public void updateSeen(Card aCard){
@@ -40,4 +56,7 @@ public class ComputerPlayer extends Player {
 		this.lastRoomVisited = lastRoomVisited;
 	}
 	
+	public ArrayList<Card> getSeenCards() {
+		return seenCards;
+	}
 }
