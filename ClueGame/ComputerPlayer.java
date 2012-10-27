@@ -14,6 +14,11 @@ public class ComputerPlayer extends Player {
 		lastRoomVisited = ' ';
 	}
 	
+	public ComputerPlayer(String str, String c, int loc) {
+		super(str, c, loc);
+		// TODO Auto-generated constructor stub
+	}
+
 	public BoardCell pickLocation(Set<BoardCell> targets){
 		return new WalkwayCell();
 	}

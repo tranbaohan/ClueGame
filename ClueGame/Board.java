@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -25,6 +26,8 @@ public class Board {
 		private HumanPlayer human;
 		private ArrayList<Card> cards;
 		private Solution solution;
+		private static final int MAX_CARDS = 21;
+		private static final int MAX_BOTS = 5;
 		
 		public Board() {
 			cells = new ArrayList<BoardCell>();
@@ -247,15 +250,52 @@ public class Board {
 		
 		/////////////////////////////////////////////////////////////////////
 		public void selectAnswer(){
+			Random generator = new Random(423524626);
+			Card person;
+			Card room;
+			Card weapon;
 			
+			while (true){
+				int random = generator.nextInt(cards.size());
+				if (cards.get(random).getType() == Card.CardType.PERSON){
+					person = cards.get(random);
+					cards.remove(random);
+					break;
+				}
+			}
+			while (true){
+				int random = generator.nextInt(cards.size());
+				if (cards.get(random).getType() == Card.CardType.ROOM){
+					room = cards.get(random);
+					cards.remove(random);
+					break;
+				}
+			}
+			while (true){
+				int random = generator.nextInt(cards.size());
+				if (cards.get(random).getType() == Card.CardType.WEAPON){
+					weapon = cards.get(random);
+					cards.remove(random);
+					break;
+				}
+			}
+			solution = new Solution(person.getName(), weapon.getName(), room.getName());
 		}
-		
-		public void deal(ArrayList<String> cardList){
-			
-		}
-		
+
 		public void deal(){
-			
+			selectAnswer();
+			for (ComputerPlayer i: computer){
+				int numCards = 0;
+				while (numCards < 3){
+					i.addCard(cards.get(0));
+					cards.remove(0);
+					numCards++;
+				}
+			}
+			while (!cards.isEmpty()){
+				human.addCard(cards.get(0));
+				cards.remove(0);
+			}
 		}
 		
 		public boolean checkAccusation(String person, String weapon, String room){
@@ -267,11 +307,71 @@ public class Board {
 		}
 		
 		public void loadCards(){
+			String file = "cards.txt";
+			try {
+				FileReader input = new FileReader(file);
+				Scanner readCards = new Scanner(input);
+				while(readCards.hasNextLine()){
+					String[] cardInfo = readCards.nextLine().split(",");
+					if (cardInfo.length != 2){
+						System.out.println("Invalid cards info");
+						System.exit(0);
+					}
+					Card.CardType type = Card.CardType.PERSON;
+					switch(cardInfo[1].trim()){
+						case "PERSON":
+							type = Card.CardType.PERSON;
+							break;
+						case "ROOM":
+							type = Card.CardType.ROOM;
+							break;
+						case "WEAPON":
+							type = Card.CardType.WEAPON;
+							break;
+						default:
+							System.out.println("Invalid cards info");
+							System.exit(0);
+					}
+					cards.add(new Card(cardInfo[0], type));
+				}				
+			} catch (FileNotFoundException e){
+				System.out.println("Can't find " + file);
+			} 
 			
+			if (cards.size() != MAX_CARDS){
+					System.out.println("Incorrect number of cards");
+					System.exit(0);
+			}
 		}
 		
 		public void loadPlayers(){
-			
+			String file = "players.txt";
+			try {
+				FileReader input = new FileReader(file);
+				Scanner readPlayers = new Scanner(input);
+				boolean readHuman = true;
+				while(readPlayers.hasNextLine()){
+					String[] playerInfo = readPlayers.nextLine().split(",");
+					if (playerInfo.length != 3){
+						System.out.println("Invalid playerss info");
+						System.exit(0);
+					}
+					if (readHuman){
+						readHuman = false;
+						human = new HumanPlayer(playerInfo[0], playerInfo[1].trim(), Integer.parseInt(playerInfo[2].trim()));
+					} else 
+						computer.add(new ComputerPlayer(playerInfo[0], playerInfo[1].trim(), Integer.parseInt(playerInfo[2].trim())));
+				}				
+			} catch (FileNotFoundException e){
+				System.out.println("Can't find " + file);
+			} catch (NumberFormatException e){
+				System.out.println("Invalid player's info");
+			}
+			if (computer.size() != MAX_BOTS){
+				System.out.println("Incorrect number of players");
+				System.exit(0);
+			}
+				
 		}
 		
 		public ArrayList<ComputerPlayer> getComputer() {
