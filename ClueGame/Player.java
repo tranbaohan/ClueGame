@@ -29,9 +29,11 @@ public class Player {
 	
 	public Card disproveSuggestion(String person, String weapon, String room){
 		ArrayList<Card> possible = new ArrayList<Card>();
+		//	check for suitable cards
 		for (Card i: myCards)
 			if (i.getName().equals(person) || i.getName().equals(weapon) | i.getName().equals(room))
 				possible.add(i);
+		//	return random card or null if no card
 		if (possible.size() == 0)
 			return null;
 		else {

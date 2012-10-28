@@ -253,12 +253,13 @@ public class Board {
 			return numColumns;
 		}
 		
+		//////////////////////////////////////////////////////////////////
 		public void selectAnswer(){
-			Random generator = new Random(423524626);
+			Random generator = new Random();
 			Card person;
 			Card room;
 			Card weapon;
-			
+			//	Select card randomly from 3 types
 			while (true){
 				int random = generator.nextInt(cards.size());
 				if (cards.get(random).getType() == Card.CardType.PERSON){
@@ -288,6 +289,7 @@ public class Board {
 
 		public void deal(){
 			selectAnswer();
+			//	deal 3 cards to each bot
 			for (ComputerPlayer i: computer){
 				int numCards = 0;
 				while (numCards < 3){
@@ -296,6 +298,7 @@ public class Board {
 					numCards++;
 				}
 			}
+			//	the rest for human player
 			while (!cards.isEmpty()){
 				human.addCard(cards.get(0));
 				cards.remove(0);
@@ -314,6 +317,7 @@ public class Board {
 		
 		public Card handleSuggestion(Suggestion suggest, Player currentPlayer){
 			ArrayList<Card> possible = new ArrayList<Card>();
+			//	Only check player that are not in turn for disprove card
 			if (human != currentPlayer){
 				Card card = human.disproveSuggestion(suggest.getPerson().getName(), 
 						suggest.getWeapon().getName(), suggest.getRoom().getName());
@@ -328,6 +332,7 @@ public class Board {
 						possible.add(card);
 				}
 			}
+			//	Randomly pick 1
 			if (possible.size() == 0)
 				return null;
 			else {

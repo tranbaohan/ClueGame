@@ -22,9 +22,11 @@ public class ComputerPlayer extends Player {
 	}
 
 	public BoardCell pickLocation(Set<BoardCell> targets){
+		//	return room if applicable
 		for (BoardCell i: targets)
 			if (i.isRoom() && !(((RoomCell) i).getInitial() == lastRoomVisited))
 				return i;
+		//	pick random cell
 		Object[] cell = targets.toArray();
 		Random generator = new Random();
 		int random = generator.nextInt(cell.length);
@@ -34,12 +36,14 @@ public class ComputerPlayer extends Player {
 	public Suggestion createSuggestion(String room){
 		ArrayList<Card> unseenWeapon = new ArrayList<Card>();
 		ArrayList<Card> unseenPerson = new ArrayList<Card>();
+		//	Check for unseen card
 		for (Card i: Board.deck){
 			if (!seenCards.contains(i) && (i.getType() == CardType.WEAPON))
 				unseenWeapon.add(i);
 			else if (!seenCards.contains(i) && (i.getType() == CardType.PERSON))
 				unseenPerson.add(i);
 		}
+		//	pick randomly from unseen card
 		Random generator = new Random();
 		int r1 = generator.nextInt(unseenWeapon.size());
 		int r2 = generator.nextInt(unseenPerson.size());
