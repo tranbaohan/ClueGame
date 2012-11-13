@@ -4,11 +4,15 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
+
 import ClueGame.Card.CardType;
 
 public class ComputerPlayer extends Player {
 	private char lastRoomVisited;
 	private ArrayList<Card> seenCards;
+	private boolean accuse = false;
+	private Suggestion savedSuggestion;
 	
 	public ComputerPlayer(){
 		seenCards = super.getMyCards();
@@ -65,4 +69,36 @@ public class ComputerPlayer extends Player {
 	public ArrayList<Card> getSeenCards() {
 		return seenCards;
 	}
+	
+	public void makeMove(Board board){
+		//	Make accusation?
+		if (accuse){
+			JOptionPane.showMessageDialog(null, "Accusation :" + savedSuggestion.getPerson().getName() + savedSuggestion.getWeapon().getName() + savedSuggestion.getRoom().getName(), "Accusation", JOptionPane.INFORMATION_MESSAGE);
+			if (board.checkAccusation(savedSuggestion.getPerson().getName(), savedSuggestion.getWeapon().getName(), savedSuggestion.getRoom().getName())){
+				JOptionPane.showMessageDialog(null, this.getName() + " is the winner", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+				System.exit(0);
+			} else 
+				JOptionPane.showMessageDialog(null, "Incorrect accusation, please continue.", "Result", JOptionPane.INFORMATION_MESSAGE);
+		} else {		
+			//	Pick location, move there, repaint board
+			BoardCell newLocation = pickLocation(board.getTargets());
+			setLocation(board.calcIndex(newLocation.getRow(), newLocation.getCol()));
+			board.repaint();
+			//	create suggestion
+			Suggestion suggestion = null;
+			Card result = null;
+			if (newLocation.isRoom()){
+				char roomIni = ((RoomCell) newLocation).getInitial();
+				suggestion = this.createSuggestion(board.getRooms().get(roomIni));
+				result = board.handleSuggestion(suggestion, this);
+				board.getInfoPanel().updateGuess(suggestion);
+				board.getInfoPanel().updateResult(result);
+			}
+			//	If no one can disprove
+			if (result == null){
+				accuse = true;
+				savedSuggestion = suggestion;
+			}
+		}
+	}	
 }

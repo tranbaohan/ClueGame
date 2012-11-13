@@ -1,7 +1,11 @@
 package ClueGame;
 
+import java.awt.Graphics;
+
 public abstract class BoardCell {
 	private int row, col;
+	public static final int WIDTH = 25;
+	public static final int HEIGHT = 25;
 	
 	public abstract boolean isWalkaway();
 	public abstract boolean isRoom();
@@ -23,5 +27,9 @@ public abstract class BoardCell {
 		col = num;
 	}
 	
-	public abstract void draw();
+	abstract public void draw(Graphics g, Board board);
+	
+	static public int toPixel(int x){
+		return x*WIDTH;
+	}
 }

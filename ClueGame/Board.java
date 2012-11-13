@@ -1,5 +1,7 @@
 package ClueGame;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
@@ -11,64 +13,70 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 
+import javax.swing.JPanel;
+
 import ClueGame.RoomCell.DoorDirection;
 
-public class Board {
+public class Board extends JPanel{
 		private ArrayList<BoardCell> cells;
 		private Map<Character, String> rooms;
-		private int numRows;
-		private int numColumns;
+		private Map<Character, Integer> labelLocation;
+		private int numRows = 20;
+		private int numColumns = 20;
 		private Set<BoardCell> targets;
 		private Map<Integer, LinkedList<Integer>> adjacencies;
 		private LinkedList<Integer> seen;
+		private GameInfoPanel gameInfoPanel;
 		
-		private ArrayList<ComputerPlayer> computer;
-		private HumanPlayer human;
+		private ArrayList<Player> players;
 		private ArrayList<Card> cards;
 		private Solution solution;
 		public static ArrayList<Card> deck;
 		private static final int MAX_CARDS = 21;
-		private static final int MAX_BOTS = 5;
+		private static final int MAX_PLAYERS = 6;
 		
 		public Board() {
+			gameInfoPanel = new GameInfoPanel();
 			cells = new ArrayList<BoardCell>();
 			rooms = new HashMap<Character, String>();
 			adjacencies = new HashMap<Integer, LinkedList<Integer>>();
 			targets = new HashSet<BoardCell>();	        
 	        seen = new LinkedList<Integer>();
-	        LoadConfigFiles();
-			calcAdjacencies();
-			
-			human = new HumanPlayer();
-			computer = new ArrayList<ComputerPlayer>();
+			players = new ArrayList<Player>();
 			cards = new ArrayList<Card>();
 			solution = new Solution();
 			deck = new ArrayList<Card>();
+			labelLocation = new HashMap<Character, Integer>();
+			LoadConfigFiles();
+			calcAdjacencies();
+			deal();
 		}
 		
 		public void LoadConfigFiles() {
 			loadLegend();
 			loadLayout();
 			setXY();
+			loadPlayers();
+			loadCards();
 		}
 		
 		public void loadLegend() {
-			String legendFile = "Clue Legend.txt";
+			String legendFile = "legend.txt";
 			try {
 				Scanner in = new Scanner(new FileReader(legendFile));
 				while(in.hasNext()) {
 					String[] input;
 					input = in.nextLine().split(",");
-					if(input.length != 2) {
-						throw new BadConfigFormatException();
-					}
 					rooms.put(input[0].charAt(0), input[1].trim());
+					if (input.length == 4){
+						int l = calcIndex(Integer.parseInt(input[2].trim()),Integer.parseInt(input[3].trim()));
+						labelLocation.put(input[0].charAt(0), l);
+					}
 				}
+				in.close();
 			} catch(FileNotFoundException e) {
 				System.out.println("File not Found: "+ legendFile);
-			} catch(BadConfigFormatException e) {
-				System.out.println(e.getMessage());
-			}
+			} 
 		}
 		
 		public void loadLayout() {
@@ -106,18 +114,18 @@ public class Board {
 								cells.add(new RoomCell(s.charAt(0), DoorDirection.NONE));
 						else
 							throw new BadConfigFormatException();
-					}
-					
+					}					
 				}
 				numRows = rows;
 				numColumns = cols;
+				in.close();
 			} catch(FileNotFoundException e) {
 				System.out.println("File not found: " + layoutFile);
 			} catch(BadConfigFormatException e) {
 				System.out.println(e.getMessage());
 			}
 		}
-		
+	
 		public void setXY(){
 			for (int i=0; i<cells.size(); i++){
 				cells.get(i).setCol(i % numColumns);
@@ -289,19 +297,13 @@ public class Board {
 
 		public void deal(){
 			selectAnswer();
-			//	deal 3 cards to each bot
-			for (ComputerPlayer i: computer){
+			for (Player i: players){
 				int numCards = 0;
 				while (numCards < 3){
 					i.addCard(cards.get(0));
 					cards.remove(0);
 					numCards++;
 				}
-			}
-			//	the rest for human player
-			while (!cards.isEmpty()){
-				human.addCard(cards.get(0));
-				cards.remove(0);
 			}
 		}
 		
@@ -318,13 +320,13 @@ public class Board {
 		public Card handleSuggestion(Suggestion suggest, Player currentPlayer){
 			ArrayList<Card> possible = new ArrayList<Card>();
 			//	Only check player that are not in turn for disprove card
-			if (human != currentPlayer){
-				Card card = human.disproveSuggestion(suggest.getPerson().getName(), 
+			if (players.get(0) != currentPlayer){
+				Card card = players.get(0).disproveSuggestion(suggest.getPerson().getName(), 
 						suggest.getWeapon().getName(), suggest.getRoom().getName());
 				if (card != null)
 					possible.add(card);
 			}
-			for (ComputerPlayer i: computer){
+			for (Player i: players){
 				if (i != currentPlayer){
 					Card card = i.disproveSuggestion(suggest.getPerson().getName(), 
 							suggest.getWeapon().getName(), suggest.getRoom().getName());
@@ -370,7 +372,8 @@ public class Board {
 					}
 					cards.add(new Card(cardInfo[0], type));
 					deck.add(new Card(cardInfo[0], type));
-				}				
+				}
+				readCards.close();
 			} catch (FileNotFoundException e){
 				System.out.println("Can't find " + file);
 			} 
@@ -395,28 +398,29 @@ public class Board {
 					}
 					if (readHuman){
 						readHuman = false;
-						human = new HumanPlayer(playerInfo[0], playerInfo[1].trim(), Integer.parseInt(playerInfo[2].trim()));
+						players.add(new HumanPlayer(playerInfo[0], playerInfo[1].trim(), Integer.parseInt(playerInfo[2].trim())));
 					} else 
-						computer.add(new ComputerPlayer(playerInfo[0], playerInfo[1].trim(), Integer.parseInt(playerInfo[2].trim())));
-				}				
+						players.add(new ComputerPlayer(playerInfo[0], playerInfo[1].trim(), Integer.parseInt(playerInfo[2].trim())));
+				}		
+				readPlayers.close();
 			} catch (FileNotFoundException e){
 				System.out.println("Can't find " + file);
 			} catch (NumberFormatException e){
 				System.out.println("Invalid player's info");
 			}
-			if (computer.size() != MAX_BOTS){
+			if (players.size() != MAX_PLAYERS){
 				System.out.println("Incorrect number of players");
 				System.exit(0);
 			}
 				
 		}
 		
-		public ArrayList<ComputerPlayer> getComputer() {
-			return computer;
+		public ArrayList<Player> getPlayers() {
+			return players;
 		}
 
 		public HumanPlayer getHuman() {
-			return human;
+			return (HumanPlayer) players.get(0);
 		}
 
 		public ArrayList<Card> getCards() {
@@ -430,5 +434,31 @@ public class Board {
 		public void setSolution(Solution solution) {
 			this.solution = solution;
 		}
+
+		public static ArrayList<Card> getDeck() {
+			return deck;
+		}
 		
+		public void paintComponent(Graphics g){
+			super.paintComponents(g);
+			for (BoardCell cell: cells)
+				cell.draw(g, this);
+			for(Player p:players) {
+				p.draw(g, this);
+			}
+			g.setColor(Color.BLACK);
+			for(char i: labelLocation.keySet()){
+				int location = labelLocation.get(i);
+				g.drawString(rooms.get(i), Player.toPixel(location % getNumColumns()), Player.toPixel(location / getNumColumns()));
+			}
+		}	
+		
+		public GameInfoPanel getInfoPanel(){
+			return gameInfoPanel;
+		}
+		
+		public int rollDie(){
+			Random generator = new Random();
+			return generator.nextInt(6) + 1;
+		}
 }

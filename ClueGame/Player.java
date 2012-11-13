@@ -1,17 +1,18 @@
 package ClueGame;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Random;
-
-import ClueGame.Card.CardType;
 
 public class Player {
 	private String name;
 	private ArrayList<Card> myCards;
 	private Color color;
 	private int location;
+	public static final int WIDTH = 25;
+	public static final int HEIGHT = 25;
 	
 	public Player(){
 		color = Color.black;
@@ -79,4 +80,12 @@ public class Player {
 		return color;
 	}
 	
+	static public int toPixel(int x){
+		return x*WIDTH;
+	}
+	public void draw(Graphics g, Board board){
+		g.setColor(color);
+		g.fillOval(toPixel(this.getLocation()%board.getNumColumns()), toPixel(this.getLocation()/board.getNumColumns()), WIDTH, HEIGHT);
+		
+	}
 }
